@@ -1,0 +1,120 @@
+@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+
+<PageTitle>Log in</PageTitle>
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <h1 class="auth-title">Log <span class="auth-title-accent">in</span></h1>
+        <div class="auth-divider"></div>
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="auth-error">@_error</div>
+        }
+
+        @if (_exception is not null)
+        {
+            <div style="background:#fff0f0;border:1px solid #c00;padding:1rem;margin-bottom:1rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;word-break:break-all;overflow-x:auto">
+                <strong>Exception: @_exception.GetType().FullName</strong>
+                <br />@_exception.Message
+                <br /><br />@_exception.StackTrace
+                @if (_exception.InnerException is not null)
+                {
+                    <br /><br /><strong>Inner: @_exception.InnerException.GetType().FullName</strong>
+                    <br />@_exception.InnerException.Message
+                    <br /><br />@_exception.InnerException.StackTrace
+                }
+            </div>
+        }
+
+        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <DataAnnotationsValidator />
+
+            <div class="auth-field">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="Input.Email"
+                           type="email" autocomplete="username"
+                           placeholder="you@example.com" />
+                <ValidationMessage For="() => Input.Email" />
+            </div>
+
+            <div class="auth-field">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="Input.Password"
+                           type="password" autocomplete="current-password"
+                           placeholder="••••••••" />
+                <ValidationMessage For="() => Input.Password" />
+            </div>
+
+            <button type="submit" class="auth-submit">Log in</button>
+        </EditForm>
+
+        <p class="auth-footer">
+            Don't have an account? <a href="register">Register</a>
+        </p>
+
+    </div>
+</div>
+
+@code {
+    private string? _error;
+    private Exception? _exception;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+    }
+
+    private async Task LoginUser()
+    {
+        _error = null;
+        _exception = null;
+        try
+        {
+            var result = await SignInManager.PasswordSignInAsync(
+                Input.Email, Input.Password, isPersistent: false, lockoutOnFailure: false);
+
+            Input.Password = string.Empty;
+
+            if (result.Succeeded)
+                NavigationManager.NavigateTo(GetReturnUrl(), forceLoad: true);
+            else
+                _error = "Invalid email or password.";
+        }
+        catch (Exception ex) when (ex is not Microsoft.AspNetCore.Components.NavigationException)
+        {
+            _exception = ex;
+        }
+    }
+
+    private string GetReturnUrl() =>
+        !string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.StartsWith("/")
+            ? ReturnUrl
+            : "/";
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = string.Empty;
+    }
+}

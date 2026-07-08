@@ -1,0 +1,21 @@
+@using GarageSale.DTOs
+
+<a href="/product-details/@Item.Id" class="product-link">
+    <div class="card product-card h-100">
+        <img src="@Item.ImagePath"
+             class="card-img-top product-img"
+             alt="@Item.ProductName" />
+        <div class="card-body d-flex flex-column">
+            <h6 class="card-title fw-bold product-name">@Item.ProductName</h6>
+            <p class="card-text product-price mt-auto">@FormatPrice(Item.Price)</p>
+        </div>
+    </div>
+</a>
+
+@code {
+    [Parameter]
+    public ProductDto Item { get; set; } = default!;
+
+    private static string FormatPrice(int cents) =>
+        (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+}

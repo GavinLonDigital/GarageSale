@@ -1,0 +1,6 @@
+bin/
+obj/
+app.db
+.env
+.vs/
+*.user

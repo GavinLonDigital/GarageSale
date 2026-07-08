@@ -1,0 +1,50 @@
+@page "/"
+@using System.Security.Claims
+@using GarageSale.DTOs
+@using GarageSale.Services
+@attribute [StreamRendering]
+@inject ISellerService SellerService
+@inject IProductService ProductService
+
+<PageTitle>Home</PageTitle>
+
+@if (_isLoading)
+{
+    <LoadingSpinner />
+}
+else{
+    <SellerCarousel Sellers="@_sellerHeroImages" />
+
+    <Products Items="@_products" />
+}
+
+@code {
+    private bool _isLoading = true;
+    private List<SellerDto> _sellerHeroImages = [];
+    private List<ProductDto> _products = [];
+
+    [SupplyParameterFromQuery(Name = "categoryId")]
+    private int? CategoryId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sellerHeroImages = SellerService.GetSellerHeroImages();
+
+        if (CategoryId.HasValue)
+        {
+            _products = await ProductService.GetProductsByCategoryOrderedByCondition(CategoryId.Value);
+        }
+        else
+        {
+            var authState = AuthStateTask is not null ? await AuthStateTask : null;
+            var userId = authState?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            _products = await ProductService.GetProductsOrderedByCondition(userId);
+        }
+
+        _isLoading = false;
+    }
+}

@@ -1,0 +1,20 @@
+@using GarageSale.DTOs
+
+@if (Items is { Count: > 0 })
+{
+    <div class="container-fluid px-4 py-4">
+        <div class="row g-4">
+            @foreach (var product in Items)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <Product Item="@product" />
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<ProductDto> Items { get; set; } = [];
+}

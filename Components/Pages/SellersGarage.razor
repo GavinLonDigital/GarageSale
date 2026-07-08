@@ -1,0 +1,87 @@
+@page "/SellersGarage/{SellerId}"
+@using System.Security.Claims
+@using GarageSale.DTOs
+@using GarageSale.Services
+@attribute [StreamRendering]
+@inject ISellerService SellerService
+@inject IProductService ProductService
+
+<PageTitle>@(_seller?.SellerBusinessName ?? "Seller's Garage")</PageTitle>
+
+@if (_isLoading)
+{
+    <LoadingSpinner />
+}
+else
+{
+    @if (_seller is not null)
+    {
+        <div class="garage-hero">
+            <img src="@_seller.LogoPath"
+                 class="garage-hero-img"
+                 alt="@_seller.SellerBusinessName" />
+            <div class="garage-hero-overlay">
+                <div class="garage-hero-content">
+                    <p class="garage-hero-eyebrow">Seller's Garage</p>
+                    <h1 class="garage-hero-name">@_seller.SellerBusinessName</h1>
+                    <div class="garage-hero-rule"></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <section class="garage-listings">
+        <div class="garage-listings-header">
+            <h2 class="garage-listings-title">The Collection</h2>
+            @if (_seller is not null)
+            {
+                <p class="garage-listings-sub">Everything available from @_seller.SellerBusinessName</p>
+            }
+        </div>
+
+        @if (_products.Count > 0)
+        {
+            <Products Items="@_products" />
+        }
+        else
+        {
+            <div class="garage-empty">
+                <p class="garage-empty-text">No items listed yet — check back soon.</p>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter]
+    public string SellerId { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery(Name = "categoryId")]
+    private int? CategoryId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private bool _isLoading = true;
+    private SellerDto? _seller;
+    private List<ProductDto> _products = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _seller = SellerService.GetSellerHeroImageById(SellerId);
+
+        if (CategoryId.HasValue)
+        {
+            _products = await ProductService.GetProductsByCategoryAndSellerOrderedByCondition(CategoryId.Value, SellerId);
+        }
+        else
+        {
+            var authState = AuthStateTask is not null ? await AuthStateTask : null;
+            var userId = authState?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            _products = await ProductService.GetProductsForSellersGarage(SellerId, userId);
+        }
+
+        _isLoading = false;
+    }
+}

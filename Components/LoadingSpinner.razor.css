@@ -1,0 +1,31 @@
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 45vh;
+    gap: 1.25rem;
+}
+
+.spinner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: conic-gradient(from var(--spin-angle), #4f46e5 0%, #818cf8 40%, transparent 72%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+    animation: spin 0.85s linear infinite;
+}
+
+.loading-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 0;
+}
+
+@keyframes spin {
+    to { --spin-angle: 360deg; }
+}

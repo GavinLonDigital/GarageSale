@@ -1,0 +1,28 @@
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<header class="site-header" role="banner">
+    <div class="header-inner">
+        <NavMenu FirstName="@_firstName" />
+    </div>
+</header>
+
+@code {
+    private string? _firstName;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask is not null)
+        {
+            var authState = await AuthStateTask;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                var user = await UserManager.GetUserAsync(authState.User);
+                _firstName = user?.FirstName;
+            }
+        }
+    }
+}

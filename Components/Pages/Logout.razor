@@ -1,0 +1,16 @@
+@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

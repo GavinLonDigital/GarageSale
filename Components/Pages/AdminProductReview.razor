@@ -1,0 +1,153 @@
+@page "/admin-product-review/{ProductId:int}"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+@using GarageSale.Configuration
+@using GarageSale.DTOs
+@using GarageSale.Services
+@using Microsoft.Extensions.Options
+@inject IProductService ProductService
+@inject IOpenAIService OpenAIService
+@inject IOptions<OpenAIOptions> OpenAIOptionsAccessor
+
+<PageTitle>@(_product?.ProductName ?? "Review Product Condition")</PageTitle>
+
+@if (_notFound)
+{
+    <div class="container py-5 text-center">
+        <div class="not-found-box">
+            <h2 class="not-found-title">Product not found</h2>
+            <p class="not-found-text">The product you're looking for doesn't exist or has been removed.</p>
+            <a href="/" class="btn btn-outline-secondary mt-2">Back to Home</a>
+        </div>
+    </div>
+}
+else if (_product is not null)
+{
+    <div class="container py-5">
+        <div class="row g-5 align-items-start">
+
+            <div class="col-12 col-md-6">
+                <img src="@_product.ImagePath"
+                     alt="@_product.ProductName"
+                     class="review-product-img img-fluid rounded shadow" />
+                <h1 class="review-product-name">@_product.ProductName</h1>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <h2 class="review-panel-title">Review Product Condition</h2>
+                <div class="review-panel-rule"></div>
+
+                <div class="review-field">
+                    <label for="condition-review" class="review-label">Condition review</label>
+                    <textarea id="condition-review"
+                              class="review-textarea"
+                              rows="10"
+                              placeholder="Describe the product's condition..."
+                              @bind="_reviewText"></textarea>
+                </div>
+
+                <button type="button" class="save-review-btn" @onclick="SaveReview" disabled="@_isSaving">
+                    @if (_isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    Save Review
+                </button>
+
+                @if (_sentiment is not null)
+                {
+                    <div class="sentiment-badge">Sentiment: @_sentiment.ToUpperInvariant()</div>
+                }
+
+                @if (_saveMessage is not null)
+                {
+                    <p class="review-save-message">@_saveMessage</p>
+                }
+
+                @if (_errorMessage is not null)
+                {
+                    <p class="review-error-message">@_errorMessage</p>
+                }
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    private ProductDto? _product;
+    private bool _notFound;
+    private string _reviewText = string.Empty;
+    private string? _saveMessage;
+    private string? _errorMessage;
+    private string? _sentiment;
+    private bool _isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _product = await ProductService.GetProductDetailsById(ProductId);
+            _notFound = _product is null;
+
+            if (_product is not null && !string.IsNullOrWhiteSpace(_product.AdminReview))
+            {
+                _reviewText = _product.AdminReview;
+                _sentiment = _product.ConditionRatingNumberDescription;
+            }
+        }
+        catch
+        {
+            _notFound = true;
+        }
+    }
+
+    private async Task SaveReview()
+    {
+        if (_isSaving)
+            return;
+
+        _isSaving = true;
+        _saveMessage = null;
+        _errorMessage = null;
+        _sentiment = null;
+
+        try
+        {
+            var conditionRatings = await ProductService.GetConditionRatings();
+            var sentimentList = string.Join(", ", conditionRatings.Select(rating => rating.ConditionRatingNumberDescription));
+
+            var prompt = OpenAIOptionsAccessor.Value.AdminReviewOpenAIPrompt
+                .Replace("{SENTIMENT}", sentimentList)
+                .Replace("{ADMINREVIEW}", _reviewText);
+
+            var response = await OpenAIService.GetResponse(prompt);
+            var sentimentWord = response?.Trim().Trim('.', '!', '?', '"');
+
+            var matchedRating = conditionRatings.FirstOrDefault(rating =>
+                string.Equals(rating.ConditionRatingNumberDescription, sentimentWord, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedRating is null)
+            {
+                _errorMessage = "OpenAI did not return a recognized sentiment. Please try again.";
+                return;
+            }
+
+            await ProductService.SaveAdminReview(ProductId, _reviewText, matchedRating.Id);
+
+            _sentiment = matchedRating.ConditionRatingNumberDescription;
+            _saveMessage = "Review saved.";
+        }
+        catch
+        {
+            _errorMessage = "Something went wrong while saving the review. Please try again.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

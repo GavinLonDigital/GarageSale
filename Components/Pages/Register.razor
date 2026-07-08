@@ -1,0 +1,238 @@
+@page "/register"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext
+@attribute [AllowAnonymous]
+
+<PageTitle>Create account</PageTitle>
+
+<div class="auth-page">
+    <div class="auth-card register-card">
+
+        <h1 class="auth-title">Create <span class="auth-title-accent">account</span></h1>
+        <div class="auth-divider"></div>
+
+        @if (_errors.Count > 0)
+        {
+            <div class="auth-error">
+                <ul>
+                    @foreach (var error in _errors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (_exception is not null)
+        {
+            <div style="background:#fff0f0;border:1px solid #c00;padding:1rem;margin-bottom:1rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;word-break:break-all;overflow-x:auto">
+                <strong>Exception: @_exception.GetType().FullName</strong>
+                <br />@_exception.Message
+                <br /><br />@_exception.StackTrace
+                @if (_exception.InnerException is not null)
+                {
+                    <br /><br /><strong>Inner: @_exception.InnerException.GetType().FullName</strong>
+                    <br />@_exception.InnerException.Message
+                    <br /><br />@_exception.InnerException.StackTrace
+                }
+            </div>
+        }
+
+        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+            <DataAnnotationsValidator />
+
+            <div class="auth-field">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="Input.Email"
+                           type="email" autocomplete="username"
+                           placeholder="you@example.com" />
+                <ValidationMessage For="() => Input.Email" />
+            </div>
+
+            <div class="auth-field">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="Input.Password"
+                           type="password" autocomplete="new-password"
+                           placeholder="Min 6 chars with uppercase, lowercase, number &amp; special" />
+                <ValidationMessage For="() => Input.Password" />
+            </div>
+
+            <div class="auth-field">
+                <label for="confirm-password">Confirm password</label>
+                <InputText id="confirm-password" @bind-Value="Input.ConfirmPassword"
+                           type="password" autocomplete="new-password"
+                           placeholder="Repeat your password" />
+                <ValidationMessage For="() => Input.ConfirmPassword" />
+            </div>
+
+            <div class="auth-field">
+                <label for="firstname">First Name</label>
+                <InputText id="firstname" @bind-Value="Input.FirstName"
+                           placeholder="Your first name" />
+                <ValidationMessage For="() => Input.FirstName" />
+            </div>
+
+            <div class="auth-field">
+                <label for="address1">Street Address</label>
+                <InputText id="address1" @bind-Value="Input.Address1"
+                           placeholder="123 Main St" />
+                <ValidationMessage For="() => Input.Address1" />
+            </div>
+
+            <div class="auth-field">
+                <label for="address2">City</label>
+                <InputText id="address2" @bind-Value="Input.Address2"
+                           placeholder="City" />
+                <ValidationMessage For="() => Input.Address2" />
+            </div>
+
+            <div class="auth-field">
+                <label for="address3">State</label>
+                <InputText id="address3" @bind-Value="Input.Address3"
+                           placeholder="State" />
+                <ValidationMessage For="() => Input.Address3" />
+            </div>
+
+            <div class="auth-field">
+                <label for="zipcode">ZIP Code</label>
+                <InputText id="zipcode" @bind-Value="Input.ZipOrPostCode"
+                           placeholder="ZIP Code" />
+                <ValidationMessage For="() => Input.ZipOrPostCode" />
+            </div>
+
+            @if (_categories.Count > 0)
+            {
+                <div class="auth-categories">
+                    <h2 class="auth-categories-title">Preferred Categories</h2>
+                    <div class="auth-categories-list">
+                        @foreach (var category in _categories)
+                        {
+                            <label class="auth-category-item">
+                                <input type="checkbox"
+                                       name="Input.SelectedCategoryIds"
+                                       value="@category.Id"
+                                       checked="@Input.SelectedCategoryIds.Contains(category.Id)" />
+                                @category.CategoryName
+                            </label>
+                        }
+                    </div>
+                </div>
+            }
+
+            <button type="submit" class="auth-submit">Create account</button>
+        </EditForm>
+
+        <p class="auth-footer">
+            Already have an account? <a href="login">Log in</a>
+        </p>
+
+    </div>
+</div>
+
+@code {
+    private List<string> _errors = new();
+    private Exception? _exception;
+    private List<Categories> _categories = new();
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = await DbContext.Categories.OrderBy(c => c.CategoryName).ToListAsync();
+    }
+
+    private async Task RegisterUser()
+    {
+        _errors = new();
+        _exception = null;
+        try
+        {
+            if (await UserManager.FindByEmailAsync(Input.Email) is not null)
+            {
+                _errors.Add("That email address is already registered.");
+                return;
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName      = Input.Email,
+                Email         = Input.Email,
+                FirstName     = Input.FirstName,
+                Address1      = Input.Address1,
+                Address2      = Input.Address2,
+                Address3      = Input.Address3,
+                ZipOrPostCode = Input.ZipOrPostCode,
+            };
+
+            var result = await UserManager.CreateAsync(user, Input.Password);
+            if (!result.Succeeded)
+            {
+                _errors = result.Errors.Select(e => e.Description).ToList();
+                return;
+            }
+
+            await UserManager.AddToRoleAsync(user, "User");
+
+            foreach (var categoryId in Input.SelectedCategoryIds)
+            {
+                DbContext.CategoriesToUsers.Add(new CategoriesToUsers
+                {
+                    UserId     = user.Id,
+                    CategoryId = categoryId,
+                });
+            }
+
+            if (Input.SelectedCategoryIds.Count > 0)
+                await DbContext.SaveChangesAsync();
+
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex) when (ex is not Microsoft.AspNetCore.Components.NavigationException)
+        {
+            _exception = ex;
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required.")]
+        [DataType(DataType.Password)]
+        [RegularExpression(
+            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{6,}$",
+            ErrorMessage = "Password must be at least 6 characters and include an uppercase letter, a lowercase letter, a number, and a special character.")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Please confirm your password.")]
+        [DataType(DataType.Password)]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "First Name is required.")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Street Address is required.")]
+        public string Address1 { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "City is required.")]
+        public string Address2 { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "State is required.")]
+        public string Address3 { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "ZIP Code is required.")]
+        public string ZipOrPostCode { get; set; } = string.Empty;
+
+        public List<int> SelectedCategoryIds { get; set; } = new();
+    }
+}

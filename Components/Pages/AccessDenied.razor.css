@@ -1,0 +1,20 @@
+.denied-box {
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    background: #f8f9fa;
+    border: 1px solid #e8e8e8;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.denied-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.denied-text {
+    color: #666;
+    margin-bottom: 0;
+}

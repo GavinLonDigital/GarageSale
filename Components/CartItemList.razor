@@ -1,0 +1,36 @@
+@using GarageSale.DTOs
+
+<div class="cart-list">
+    @foreach (var item in Items)
+    {
+        <div class="cart-item-card">
+            <img src="@(item.ImagePath ?? "images/placeholder.png")"
+                 alt="@item.ProductName"
+                 class="cart-item-img" />
+
+            <div class="cart-item-info">
+                <p class="cart-item-name">@item.ProductName</p>
+                <p class="cart-item-price">@FormatPrice(item.Price)</p>
+                <p class="cart-item-seller">Sold by @item.SellerBusinessName</p>
+            </div>
+
+            @if (ItemActions is not null)
+            {
+                <div class="cart-item-actions">
+                    @ItemActions(item)
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<ShoppingCartItemsDto> Items { get; set; } = [];
+
+    [Parameter]
+    public RenderFragment<ShoppingCartItemsDto>? ItemActions { get; set; }
+
+    public static string FormatPrice(int cents) =>
+        (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+}

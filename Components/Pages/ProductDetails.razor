@@ -1,0 +1,163 @@
+@page "/product-details/{ProductId:int}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using GarageSale.DTOs
+@using GarageSale.Services
+@using System.Security.Claims
+@inject IProductService ProductService
+@inject IShoppingCartService ShoppingCartService
+@inject CartStateService CartStateService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@(_product?.ProductName ?? "Product Details")</PageTitle>
+
+@if (_notFound)
+{
+    <div class="container py-5 text-center">
+        <div class="not-found-box">
+            <h2 class="not-found-title">Product not found</h2>
+            <p class="not-found-text">The product you're looking for doesn't exist or has been removed.</p>
+            <a href="/" class="btn btn-outline-secondary mt-2">Back to Home</a>
+        </div>
+    </div>
+}
+else if (_product is not null)
+{
+    <div class="container py-5">
+        <div class="row g-5 align-items-start">
+
+            <div class="col-12 col-md-6">
+                <img src="@_product.ImagePath"
+                     alt="@_product.ProductName"
+                     class="product-detail-img img-fluid rounded shadow" />
+            </div>
+
+            <div class="col-12 col-md-6">
+                <h1 class="product-detail-name">@_product.ProductName</h1>
+
+                <p class="product-detail-price">@FormatPrice(_product.Price)</p>
+
+                <p class="product-detail-description">@_product.ProductDescription</p>
+
+                <div class="product-detail-meta">
+                    <div class="meta-row">
+                        <span class="meta-label">Category</span>
+                        <span class="meta-value">@_product.CategoryName</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Condition</span>
+                        <span class="meta-value">@_product.ConditionRatingNumberDescription</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Seller</span>
+                        <span class="meta-value">@_product.SellerBusinessName</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Contact</span>
+                        <span class="meta-value">@_product.SellerEmail</span>
+                    </div>
+                </div>
+
+                <button type="button" class="add-to-cart-btn" @onclick="AddToCart" disabled="@_isAdding">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Add to Cart
+                </button>
+
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <button type="button" class="review-condition-btn" @onclick="ReviewProductCondition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                            </svg>
+                            Review Product Condition
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
+
+                @if (_cartMessage is not null)
+                {
+                    <p class="cart-message @(_cartMessageIsError ? "cart-message--warn" : "cart-message--ok")">
+                        @_cartMessage
+                    </p>
+                }
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private ProductDto? _product;
+    private bool _notFound;
+    private bool _isAdding;
+    private string? _cartMessage;
+    private bool _cartMessageIsError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _product = await ProductService.GetProductDetailsById(ProductId);
+            _notFound = _product is null;
+        }
+        catch
+        {
+            _notFound = true;
+        }
+    }
+
+    private async Task AddToCart()
+    {
+        if (_product is null || _isAdding)
+            return;
+
+        _isAdding = true;
+        _cartMessage = null;
+
+        try
+        {
+            var authState = await AuthState;
+            var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null)
+                return;
+
+            var cartItems = await ShoppingCartService.GetShoppingCartItems(userId);
+            if (cartItems.Any(item => item.ProductId == ProductId))
+            {
+                _cartMessage = "This item is already in your cart.";
+                _cartMessageIsError = true;
+                return;
+            }
+
+            await ShoppingCartService.AddItemToShoppingCart(new ShoppingCartItemsDto
+            {
+                UserId    = userId,
+                ProductId = _product.Id,
+                SellerId  = _product.SellerId,
+                Price     = _product.Price,
+            });
+
+            CartStateService.Increment();
+            _cartMessage = "Added to cart!";
+            _cartMessageIsError = false;
+        }
+        finally
+        {
+            _isAdding = false;
+        }
+    }
+
+    private void ReviewProductCondition() =>
+        NavigationManager.NavigateTo($"/admin-product-review/{ProductId}");
+
+    private static string FormatPrice(int cents) =>
+        (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+}

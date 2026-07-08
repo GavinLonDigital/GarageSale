@@ -1,0 +1,544 @@
+.topnav {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+}
+
+/* ── Brand ──────────────────────────────────────────────── */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.brand-logo {
+    width: 28px;
+    height: 28px;
+    display: block;
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.brand-name {
+    color: var(--text-on-dark);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.brand-accent {
+    color: var(--accent);
+}
+
+/* ── Primary links ──────────────────────────────────────── */
+.primary-links {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.primary-links ::deep .nav-link {
+    color: #B8B0A5;
+    text-decoration: none;
+    font-size: 0.775rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.85rem;
+    border-radius: 3px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.primary-links ::deep .nav-link:hover {
+    color: var(--text-on-dark);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.primary-links ::deep .nav-link.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.primary-links ::deep .nav-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ── Auth cluster ────────────────────────────────────────── */
+.auth-cluster {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.auth-cluster ::deep .btn-login {
+    background: transparent;
+    color: var(--text-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.38rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.auth-cluster ::deep .btn-login:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.auth-cluster ::deep .btn-register {
+    background: var(--accent);
+    color: var(--ground);
+    border: 1px solid var(--accent);
+    padding: 0.38rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+}
+
+.auth-cluster ::deep .btn-register:hover {
+    opacity: 0.88;
+}
+
+.auth-cluster ::deep .btn-login:focus-visible,
+.auth-cluster ::deep .btn-register:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.user-greeting {
+    color: var(--text-on-dark);
+    font-size: 0.775rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+/* ── Cart icon (desktop) ─────────────────────────────────── */
+.cart-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    color: var(--text-on-dark);
+    cursor: pointer;
+    flex-shrink: 0;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+}
+
+.cart-btn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.cart-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    background: var(--accent);
+    color: var(--ground);
+    font-size: 0.7rem;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+/* ── Categories dropdown ─────────────────────────────────── */
+.categories-wrapper {
+    position: relative;
+}
+
+.cat-toggle {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    color: #B8B0A5;
+    font-size: 0.775rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.cat-toggle:hover {
+    color: var(--text-on-dark);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.cat-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.cat-chevron {
+    font-size: 0.7rem;
+    display: inline-block;
+    transition: transform 0.15s ease;
+    line-height: 1;
+}
+
+.cat-chevron.open {
+    transform: rotate(180deg);
+}
+
+.cat-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 299;
+}
+
+.cat-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 300;
+    min-width: 160px;
+    background: #111009;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid var(--accent);
+    border-radius: 0 0 4px 4px;
+    padding: 0.4rem 0;
+}
+
+.cat-dropdown .cat-item {
+    display: block;
+    padding: 0.6rem 1.1rem;
+    color: #B8B0A5;
+    font-size: 0.775rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.cat-dropdown .cat-item:hover {
+    color: var(--text-on-dark);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cat-dropdown .cat-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background-color: rgba(212, 224, 74, 0.06);
+}
+
+/* ── Mobile menu — hidden on desktop ────────────────────── */
+.mobile-menu {
+    display: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE: mobile (≤ 640px)
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .user-greeting {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .primary-links,
+    .auth-cluster {
+        display: none;
+    }
+
+    .mobile-menu {
+        display: block;
+        margin-left: auto;
+        position: relative;
+    }
+
+    .mobile-menu summary {
+        list-style: none;
+    }
+
+    .mobile-menu summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .mobile-toggle {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .mobile-toggle:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .hamburger-bar {
+        display: block;
+        height: 2px;
+        width: 100%;
+        background: var(--text-on-dark);
+        border-radius: 1px;
+    }
+
+    .mobile-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: -1rem;
+        min-width: 200px;
+        background: #111009;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 2px solid var(--accent);
+        border-radius: 0 0 4px 4px;
+        padding: 0.5rem 0;
+        z-index: 300;
+    }
+
+    .mobile-dropdown ::deep .mobile-nav-link {
+        display: block;
+        padding: 0.7rem 1.25rem;
+        color: #B8B0A5;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .mobile-dropdown ::deep .mobile-nav-link:hover {
+        color: var(--text-on-dark);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-dropdown ::deep .mobile-nav-link.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background-color: rgba(212, 224, 74, 0.06);
+    }
+
+    .mobile-cat-toggle {
+        background: none;
+        border: none;
+        border-left: 2px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.7rem 1.25rem;
+        color: #B8B0A5;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: left;
+    }
+
+    .mobile-cat-toggle:hover {
+        color: var(--text-on-dark);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-cat-sub {
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-cat-sub .mobile-sub-link {
+        display: block;
+        padding: 0.55rem 1.25rem 0.55rem 2rem;
+        color: #9A9089;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .mobile-cat-sub .mobile-sub-link:hover {
+        color: var(--text-on-dark);
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .mobile-cat-sub .mobile-sub-link.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background-color: rgba(212, 224, 74, 0.06);
+    }
+
+    .mobile-cart-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 3px;
+        width: 36px;
+        height: 36px;
+        color: var(--text-on-dark);
+        cursor: pointer;
+        flex-shrink: 0;
+        text-decoration: none;
+    }
+
+    .mobile-cart-btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .mobile-cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--accent);
+        color: var(--ground);
+        font-size: 0.65rem;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+        line-height: 1;
+    }
+
+    .mobile-auth-section {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        margin-top: 0.35rem;
+    }
+
+    .mobile-greeting {
+        padding: 0.75rem 1.25rem 0;
+        color: var(--text-on-dark);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .mobile-auth-row {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        align-items: center;
+    }
+
+    .mobile-auth-row ::deep .mobile-btn-login {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 3px;
+        color: var(--text-on-dark);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.12s ease;
+    }
+
+    .mobile-auth-row ::deep .mobile-btn-login:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .mobile-auth-row ::deep .mobile-btn-register {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        background: var(--accent);
+        border-radius: 3px;
+        color: var(--ground);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.12s ease;
+    }
+
+    .mobile-auth-row ::deep .mobile-btn-register:hover {
+        opacity: 0.88;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .primary-links ::deep .nav-link,
+    .cat-toggle,
+    .cat-chevron,
+    .cat-dropdown .cat-item,
+    .auth-cluster ::deep .btn-login,
+    .auth-cluster ::deep .btn-register,
+    .mobile-dropdown ::deep .mobile-nav-link,
+    .mobile-cat-sub .mobile-sub-link,
+    .mobile-auth-row ::deep .mobile-btn-login,
+    .mobile-auth-row ::deep .mobile-btn-register {
+        transition: none;
+    }
+}

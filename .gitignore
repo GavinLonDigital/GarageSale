@@ -1,0 +1,55 @@
+# Build output
+bin/
+obj/
+
+# Publish output
+publish/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+
+# VS Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# ASP.NET secrets
+secrets.json
+
+# Azure
+*.azurePubxml
+
+# NuGet packages (only if using a local packages folder)
+packages/
+!packages/build/
+
+# Test results
+TestResults/
+*.trx
+coverage/
+
+# Node modules (if your Blazor app uses npm)
+node_modules/
+
+# Generated files
+Generated/

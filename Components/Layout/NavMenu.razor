@@ -1,0 +1,183 @@
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Security.Claims
+@using GarageSale.DTOs
+@using GarageSale.Services
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IShoppingCartService ShoppingCartService
+@inject IProductService ProductService
+@inject CartStateService CartStateService
+@inject NavigationManager NavigationManager
+
+<nav class="topnav" aria-label="Primary navigation">
+
+    <a class="brand" href="" aria-label="GarageSale home">
+        <svg class="brand-logo" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.41l9 9c.36.37.86.59 1.41.59s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.22-1.05-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" />
+        </svg>
+        <span class="brand-name">Garage<span class="brand-accent">Sale</span></span>
+    </a>
+
+    <div class="primary-links" role="list">
+        <div role="listitem">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Home</NavLink>
+        </div>
+        <div role="listitem" class="categories-wrapper">
+            <button class="nav-link cat-toggle" @onclick="ToggleCategories"
+                    aria-expanded="@_categoriesOpen" aria-haspopup="true">
+                Categories
+                <span class="cat-chevron @(_categoriesOpen ? "open" : "")">▾</span>
+            </button>
+            @if (_categoriesOpen)
+            {
+                <div class="cat-overlay" @onclick="CloseCategories"></div>
+                <div class="cat-dropdown" role="menu">
+                    <a class="@CategoryLinkClass("cat-item", null)" href="@BuildAllHref()" role="menuitem"
+                       aria-current="@(SelectedCategoryId is null ? "page" : null)" @onclick="CloseCategories">All</a>
+                    @foreach (var category in _categories)
+                    {
+                        <a class="@CategoryLinkClass("cat-item", category.Id)" href="@BuildCategoryHref(category.Id)" role="menuitem"
+                           aria-current="@(SelectedCategoryId == category.Id ? "page" : null)" @onclick="CloseCategories">@category.CategoryName</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="auth-cluster">
+        <AuthorizeView>
+            <Authorized>
+                @if (!string.IsNullOrWhiteSpace(FirstName))
+                {
+                    <span class="user-greeting">Welcome, @FirstName</span>
+                }
+                <a href="/shopping-cart" class="cart-btn" aria-label="Shopping cart, @CartStateService.ItemCount items">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.17 14.75l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.46 4H5.21l-.94-2H1v2h2l3.6 7.59L5.25 14c-.16.28-.25.61-.25.96C5 16.1 5.9 17 7 17h14v-2H7.42c-.13 0-.25-.11-.25-.25z"/>
+                    </svg>
+                    <span class="cart-badge" aria-hidden="true">@CartStateService.ItemCount</span>
+                </a>
+                <a class="btn-login" href="/logout" data-enhance-nav="false">Log out</a>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink class="btn-login" href="login">Log in</NavLink>
+                <NavLink class="btn-register" href="register">Register</NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+    <details class="mobile-menu" open="@_mobileOpen">
+        <summary class="mobile-toggle" @onclick="() => _mobileOpen = !_mobileOpen" aria-label="Open navigation menu">
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+        </summary>
+        <div class="mobile-dropdown">
+            <NavLink class="mobile-nav-link" href="" Match="NavLinkMatch.All" @onclick="CloseMobile">Home</NavLink>
+            <button class="mobile-nav-link mobile-cat-toggle" @onclick="ToggleCategories">
+                Categories
+                <span class="cat-chevron @(_categoriesOpen ? "open" : "")">▾</span>
+            </button>
+            @if (_categoriesOpen)
+            {
+                <div class="mobile-cat-sub">
+                    <a class="@CategoryLinkClass("mobile-sub-link", null)" href="@BuildAllHref()"
+                       aria-current="@(SelectedCategoryId is null ? "page" : null)" @onclick="CloseMobile">All</a>
+                    @foreach (var category in _categories)
+                    {
+                        <a class="@CategoryLinkClass("mobile-sub-link", category.Id)" href="@BuildCategoryHref(category.Id)"
+                           aria-current="@(SelectedCategoryId == category.Id ? "page" : null)" @onclick="CloseMobile">@category.CategoryName</a>
+                    }
+                </div>
+            }
+            <div class="mobile-auth-section">
+                <AuthorizeView>
+                    <Authorized>
+                        @if (!string.IsNullOrWhiteSpace(FirstName))
+                        {
+                            <div class="mobile-greeting">Welcome, @FirstName</div>
+                        }
+                        <div class="mobile-auth-row">
+                            <a href="/shopping-cart" class="mobile-cart-btn" @onclick="CloseMobile" aria-label="Shopping cart, @CartStateService.ItemCount items">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.17 14.75l.03-.12.9-1.63H17c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 21.46 4H5.21l-.94-2H1v2h2l3.6 7.59L5.25 14c-.16.28-.25.61-.25.96C5 16.1 5.9 17 7 17h14v-2H7.42c-.13 0-.25-.11-.25-.25z"/>
+                                </svg>
+                                <span class="mobile-cart-badge" aria-hidden="true">@CartStateService.ItemCount</span>
+                            </a>
+                            <a class="mobile-btn-login" href="/logout" data-enhance-nav="false">Log out</a>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="mobile-auth-row">
+                            <NavLink class="mobile-btn-login" href="login" @onclick="CloseMobile">Log in</NavLink>
+                            <NavLink class="mobile-btn-register" href="register" @onclick="CloseMobile">Register</NavLink>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </details>
+
+</nav>
+
+@code {
+    [Parameter]
+    public string? FirstName { get; set; }
+
+    [SupplyParameterFromQuery(Name = "categoryId")]
+    private int? SelectedCategoryId { get; set; }
+
+    private bool _mobileOpen = false;
+    private bool _categoriesOpen = false;
+    private List<CategoryDto> _categories = [];
+
+    private void CloseMobile()
+    {
+        _mobileOpen = false;
+        _categoriesOpen = false;
+    }
+
+    private void ToggleCategories() => _categoriesOpen = !_categoriesOpen;
+    private void CloseCategories() => _categoriesOpen = false;
+
+    private string CategoryLinkClass(string baseClass, int? categoryId) =>
+        SelectedCategoryId == categoryId ? $"{baseClass} active" : baseClass;
+
+    private string CurrentPath() =>
+        new Uri(NavigationManager.Uri).AbsolutePath;
+
+    private string BuildAllHref()
+    {
+        var path = CurrentPath();
+        return path.StartsWith("/SellersGarage/", StringComparison.OrdinalIgnoreCase)
+            ? path
+            : "/";
+    }
+
+    private string BuildCategoryHref(int categoryId)
+    {
+        var path = CurrentPath();
+        return path.StartsWith("/SellersGarage/", StringComparison.OrdinalIgnoreCase)
+            ? $"{path}?categoryId={categoryId}"
+            : $"/?categoryId={categoryId}";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartStateService.OnCartChanged += HandleCartChanged;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId is not null)
+        {
+            var items = await ShoppingCartService.GetShoppingCartItems(userId);
+            CartStateService.SetCount(items.Count);
+        }
+
+        _categories = await ProductService.GetProductCategories();
+    }
+
+    private void HandleCartChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => CartStateService.OnCartChanged -= HandleCartChanged;
+}

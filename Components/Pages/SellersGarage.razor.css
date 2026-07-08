@@ -1,0 +1,124 @@
+/* ── Hero ─────────────────────────────────────────────────────
+   Dark cinematic treatment: image fills width, gradient pulls
+   toward --ground so the seller name reads cleanly at the base.
+   ────────────────────────────────────────────────────────────── */
+.garage-hero {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #1C1917; /* --ground: fills any letterbox gap */
+}
+
+.garage-hero-img {
+    display: block;
+    width: 100%;
+    max-height: 520px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.garage-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent            20%,
+        rgba(28, 25, 23, 0.50) 52%,
+        rgba(28, 25, 23, 0.93) 100%
+    );
+    display: flex;
+    align-items: flex-end;
+}
+
+.garage-hero-content {
+    padding: 2.5rem 2rem;
+    width: 100%;
+}
+
+/* Small accent-coloured label above the name — matches the auth
+   and nav eyebrow pattern used throughout the application. */
+.garage-hero-eyebrow {
+    color: #D4E04A; /* --accent */
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin: 0 0 0.6rem;
+    line-height: 1;
+}
+
+.garage-hero-name {
+    color: #F5F0E8; /* --text-on-dark */
+    font-size: clamp(1.9rem, 5vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 1.1rem;
+}
+
+/* Short accent rule mirrors the auth-divider pattern. */
+.garage-hero-rule {
+    height: 2px;
+    width: 3rem;
+    background: #D4E04A; /* --accent */
+    border-radius: 1px;
+}
+
+/* ── Listings section ─────────────────────────────────────────
+   Warm paper background creates a clear "storefront floor"
+   contrast to the dark hero above.
+   3px accent stripe is the visual handshake between the two.
+   ────────────────────────────────────────────────────────────── */
+.garage-listings {
+    background: #FAF7F2; /* --paper */
+    border-top: 3px solid #D4E04A; /* --accent */
+    padding-bottom: 3rem;
+}
+
+/* px-4 on Products uses 1.5 rem, so header matches exactly. */
+.garage-listings-header {
+    padding: 2rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(28, 25, 23, 0.08);
+}
+
+.garage-listings-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #1C1917; /* --ground */
+    margin: 0 0 0.3rem;
+}
+
+.garage-listings-sub {
+    font-size: 0.825rem;
+    color: #888;
+    margin: 0;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.garage-empty {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.garage-empty-text {
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .garage-hero-img {
+        max-height: 340px;
+    }
+
+    .garage-hero-content {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .garage-listings-header {
+        padding: 1.5rem 1.25rem 0.75rem;
+    }
+}

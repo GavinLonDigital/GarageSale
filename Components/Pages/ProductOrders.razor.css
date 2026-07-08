@@ -1,0 +1,280 @@
+/* ── Page shell ───────────────────────────────────────────────
+   Warm paper tint signals a different context from the cart's
+   plain white, without being heavy-handed.
+   ────────────────────────────────────────────────────────────── */
+.checkout-page {
+    background: #FAF7F2; /* --paper */
+    min-height: calc(100vh - 64px); /* --header-height */
+}
+
+.checkout-container {
+    max-width: 720px;
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+}
+
+/* ── Page header ──────────────────────────────────────────────
+   Step badge + title + subtitle + accent rule differentiates
+   this from the shopping cart's plain h1.
+   ────────────────────────────────────────────────────────────── */
+.checkout-header {
+    margin-bottom: 2rem;
+}
+
+.checkout-step-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #1C1917;       /* --ground */
+    background: #D4E04A;  /* --accent */
+    padding: 0.25rem 0.65rem;
+    border-radius: 3px;
+    margin-bottom: 0.85rem;
+    line-height: 1;
+}
+
+.checkout-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #1C1917;
+    margin: 0 0 0.4rem;
+    line-height: 1.1;
+}
+
+.checkout-subtitle {
+    font-size: 0.875rem;
+    color: #888;
+    margin: 0 0 1.25rem;
+}
+
+.checkout-header-rule {
+    height: 2px;
+    width: 3rem;
+    background: #D4E04A; /* --accent */
+    border-radius: 1px;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.checkout-empty-text {
+    font-size: 1.05rem;
+    color: #888;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+/* ── Confirm panel ────────────────────────────────────────────
+   Groups total + CTA into one card, like a payment summary
+   widget — distinguishes checkout intent from the cart's
+   plain border-top summary.
+   ────────────────────────────────────────────────────────────── */
+.checkout-confirm-panel {
+    margin-top: 1.75rem;
+    background: #fff;
+    border: 1px solid #e0dbd3;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 2px 12px rgba(28, 25, 23, 0.07);
+}
+
+.checkout-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.checkout-summary-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #999;
+}
+
+.checkout-summary-label--total {
+    color: #1C1917;
+}
+
+.checkout-summary-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.checkout-summary-divider {
+    height: 1px;
+    background: #eee;
+    margin: 0.9rem 0;
+}
+
+.checkout-summary-total-row {
+    margin-bottom: 1.25rem;
+}
+
+.checkout-summary-total {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1C1917;
+    letter-spacing: -0.02em;
+}
+
+/* ── Secure note ──────────────────────────────────────────── */
+.checkout-secure-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin: 0 0 0.75rem;
+}
+
+.checkout-lock-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: #bbb;
+}
+
+/* ── Buy button ───────────────────────────────────────────────
+   Uses the app's own accent palette (--accent on --ground)
+   rather than Bootstrap blue — a more decisive CTA that reads
+   as "commit" rather than "navigate forward".
+   ────────────────────────────────────────────────────────────── */
+.checkout-buy-btn {
+    display: block;
+    width: 100%;
+    background: #D4E04A; /* --accent */
+    color: #1C1917;      /* --ground */
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.checkout-buy-btn:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+.checkout-buy-btn:focus-visible {
+    outline: 2px solid #D4E04A;
+    outline-offset: 3px;
+}
+
+.checkout-buy-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ── Error ────────────────────────────────────────────────── */
+.checkout-error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-left: 3px solid rgba(239, 68, 68, 0.6);
+    border-radius: 3px;
+    color: #dc3545;
+    font-size: 0.825rem;
+    padding: 0.65rem 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+/* ── Success state ────────────────────────────────────────────
+   Uses the app's dark ground palette rather than Bootstrap's
+   green alert — feels native and celebratory.
+   ────────────────────────────────────────────────────────────── */
+.checkout-success {
+    background: #1C1917;   /* --ground */
+    border: 1px solid rgba(212, 224, 74, 0.2);
+    border-radius: 12px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.checkout-success-icon {
+    width: 52px;
+    height: 52px;
+    background: #D4E04A;  /* --accent */
+    color: #1C1917;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    line-height: 1;
+}
+
+.checkout-success-title {
+    color: #F5F0E8;  /* --text-on-dark */
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+}
+
+.checkout-success-body {
+    color: #B8B0A5;
+    font-size: 0.925rem;
+    margin: 0 0 1.75rem;
+    line-height: 1.6;
+}
+
+.checkout-success-ref {
+    color: #D4E04A;  /* --accent */
+    font-weight: 800;
+}
+
+.checkout-success-link {
+    display: inline-block;
+    background: #D4E04A;
+    color: #1C1917;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.7rem 1.75rem;
+    border-radius: 4px;
+    transition: opacity 0.15s ease;
+}
+
+.checkout-success-link:hover {
+    color: #1C1917;
+    opacity: 0.88;
+    text-decoration: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 576px) {
+    .checkout-container {
+        padding-top: 2rem;
+    }
+
+    .checkout-title {
+        font-size: 1.6rem;
+    }
+
+    .checkout-confirm-panel {
+        padding: 1.25rem;
+    }
+
+    .checkout-success {
+        padding: 2.25rem 1.5rem;
+    }
+}

@@ -1,0 +1,130 @@
+.review-product-img {
+    width: 100%;
+    max-height: 520px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.review-product-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #1a1a2e;
+    margin-top: 1.25rem;
+}
+
+.review-panel-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 0.75rem;
+}
+
+.review-panel-rule {
+    height: 2px;
+    width: 3rem;
+    background: #4f46e5;
+    border-radius: 1px;
+    margin-bottom: 1.5rem;
+}
+
+.review-field {
+    margin-bottom: 1.5rem;
+}
+
+.review-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.review-textarea {
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    border: 1px solid #d8d8e0;
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.save-review-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.save-review-btn:hover {
+    background: #3730a3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+}
+
+.save-review-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.save-review-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.sentiment-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 1.25rem;
+    padding: 0.5rem 1.1rem;
+    background: rgba(79, 70, 229, 0.1);
+    color: #4f46e5;
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.review-save-message {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    color: #198754;
+}
+
+.review-error-message {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    color: #dc3545;
+}

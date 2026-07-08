@@ -1,0 +1,146 @@
+@page "/checkout"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using GarageSale.DTOs
+@using GarageSale.Services
+@using System.Security.Claims
+@inject IShoppingCartService ShoppingCartService
+@inject IOrderService OrderService
+
+<PageTitle>Order Summary</PageTitle>
+
+<div class="checkout-page">
+    <div class="container checkout-container">
+
+        @if (_isLoading)
+        {
+            <LoadingSpinner />
+        }
+        else if (_orderPlaced)
+        {
+            <div class="checkout-success" role="alert">
+                <div class="checkout-success-icon" aria-hidden="true">&#10003;</div>
+                <h2 class="checkout-success-title">Order placed!</h2>
+                <p class="checkout-success-body">
+                    Thank you for your purchase. Your order reference is
+                    <strong class="checkout-success-ref">#@_orderId</strong>.
+                </p>
+                <a href="/" class="checkout-success-link">Continue Shopping</a>
+            </div>
+        }
+        else if (_cartItems.Count == 0)
+        {
+            <p class="checkout-empty-text">Your shopping cart is empty.</p>
+        }
+        else
+        {
+            <div class="checkout-header">
+                <span class="checkout-step-badge">Step 2 of 2</span>
+                <h1 class="checkout-title">Order Summary</h1>
+                <p class="checkout-subtitle">Review your items before placing your order.</p>
+                <div class="checkout-header-rule"></div>
+            </div>
+
+            <CartItemList Items="_cartItems" />
+
+            <div class="checkout-confirm-panel">
+
+                <div class="checkout-summary-row">
+                    <span class="checkout-summary-label">
+                        Items (@_cartItems.Count)
+                    </span>
+                    <span class="checkout-summary-value">
+                        @FormatPrice(_cartItems.Sum(i => i.Price))
+                    </span>
+                </div>
+
+                <div class="checkout-summary-divider"></div>
+
+                <div class="checkout-summary-row checkout-summary-total-row">
+                    <span class="checkout-summary-label checkout-summary-label--total">
+                        Total
+                    </span>
+                    <span class="checkout-summary-total">
+                        @FormatPrice(_cartItems.Sum(i => i.Price))
+                    </span>
+                </div>
+
+                @if (_buyError is not null)
+                {
+                    <div class="checkout-error" role="alert">@_buyError</div>
+                }
+
+                <p class="checkout-secure-note" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="checkout-lock-icon" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Secure checkout
+                </p>
+
+                <button class="checkout-buy-btn"
+                        @onclick="Buy"
+                        disabled="@_isBuying">
+                    @if (_isBuying)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    Place Your Order
+                </button>
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private List<ShoppingCartItemsDto> _cartItems = [];
+    private bool _isLoading = true;
+    private bool _isBuying;
+    private bool _orderPlaced;
+    private int  _orderId;
+    private string? _userId;
+    private string? _buyError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        _userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (_userId is not null)
+            _cartItems = await ShoppingCartService.GetShoppingCartItems(_userId);
+
+        _isLoading = false;
+    }
+
+    private async Task Buy()
+    {
+        if (_userId is null || _isBuying)
+            return;
+
+        _isBuying = true;
+        _buyError = null;
+
+        try
+        {
+            _orderId     = await OrderService.CreateOrder(_userId);
+            _orderPlaced = true;
+            _cartItems   = [];
+        }
+        catch (Exception ex)
+        {
+            _buyError = $"Checkout failed: {ex.Message}";
+        }
+        finally
+        {
+            _isBuying = false;
+        }
+    }
+
+    private static string FormatPrice(int cents) =>
+        (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+}

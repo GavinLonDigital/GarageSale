@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+
+# Enable development mode and reliable file watching in Docker
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+ENV DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH=false
+ENV DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+
+EXPOSE 8080
+EXPOSE 7001
+
+# Copy project file and restore dependencies
+COPY ["GarageSale.csproj", "./"]
+RUN dotnet restore "GarageSale.csproj"
+
+# Copy the rest of the source
+COPY . .
+
+# Start with hot reload
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]

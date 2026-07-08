@@ -1,0 +1,39 @@
+@using GarageSale.DTOs
+
+@if (Sellers is { Count: > 0 })
+{
+    <div id="sellerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (int i = 0; i < Sellers.Count; i++)
+            {
+                var seller = Sellers[i];
+                var isActive = i == 0;
+
+                <div class="carousel-item @(isActive ? "active" : "")" data-bs-interval="5000">
+                    <a href="/SellersGarage/@seller.UserId">
+                        <img src="@seller.LogoPath"
+                             class="d-block w-100 seller-carousel-img"
+                             alt="@seller.SellerBusinessName" />
+                    </a>
+                </div>
+            }
+        </div>
+
+        <button class="carousel-control-prev" type="button"
+                data-bs-target="#sellerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+
+        <button class="carousel-control-next" type="button"
+                data-bs-target="#sellerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<SellerDto>? Sellers { get; set; }
+}
