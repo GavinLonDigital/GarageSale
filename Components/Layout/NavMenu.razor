@@ -6,8 +6,10 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IShoppingCartService ShoppingCartService
 @inject IProductService ProductService
+@inject IOrderService OrderService
 @inject CartStateService CartStateService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
 
 <nav class="topnav" aria-label="Primary navigation">
 
@@ -42,6 +44,32 @@
                 </div>
             }
         </div>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div role="listitem" class="categories-wrapper">
+                    <button class="nav-link cat-toggle" @onclick="ToggleAdmin"
+                            aria-expanded="@_adminOpen" aria-haspopup="true">
+                        Admin
+                        <span class="cat-chevron @(_adminOpen ? "open" : "")">▾</span>
+                    </button>
+                    @if (_adminOpen)
+                    {
+                        <div class="cat-overlay" @onclick="CloseAdmin"></div>
+                        <div class="cat-dropdown" role="menu">
+                            <button class="cat-item admin-action" role="menuitem"
+                                    @onclick="HandleClearOrders" disabled="@_clearingOrders">
+                                @(_clearingOrders ? "Clearing..." : "Clear Orders")
+                            </button>
+                            <a class="cat-item" href="/admin-order-history" role="menuitem" @onclick="CloseAdmin">Order History</a>
+                            @if (_adminError is not null)
+                            {
+                                <p class="admin-error-text">@_adminError</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </div>
 
     <div class="auth-cluster">
@@ -90,6 +118,27 @@
                     }
                 </div>
             }
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <button class="mobile-nav-link mobile-cat-toggle" @onclick="ToggleAdmin">
+                        Admin
+                        <span class="cat-chevron @(_adminOpen ? "open" : "")">▾</span>
+                    </button>
+                    @if (_adminOpen)
+                    {
+                        <div class="mobile-cat-sub">
+                            <button class="mobile-sub-link admin-action" @onclick="HandleClearOrders" disabled="@_clearingOrders">
+                                @(_clearingOrders ? "Clearing..." : "Clear Orders")
+                            </button>
+                            <a class="mobile-sub-link" href="/admin-order-history" @onclick="CloseMobile">Order History</a>
+                            @if (_adminError is not null)
+                            {
+                                <p class="admin-error-text">@_adminError</p>
+                            }
+                        </div>
+                    }
+                </Authorized>
+            </AuthorizeView>
             <div class="mobile-auth-section">
                 <AuthorizeView>
                     <Authorized>
@@ -129,16 +178,51 @@
 
     private bool _mobileOpen = false;
     private bool _categoriesOpen = false;
+    private bool _adminOpen = false;
+    private bool _clearingOrders = false;
+    private string? _adminError;
     private List<CategoryDto> _categories = [];
 
     private void CloseMobile()
     {
         _mobileOpen = false;
         _categoriesOpen = false;
+        _adminOpen = false;
     }
 
     private void ToggleCategories() => _categoriesOpen = !_categoriesOpen;
     private void CloseCategories() => _categoriesOpen = false;
+
+    private void ToggleAdmin() => _adminOpen = !_adminOpen;
+    private void CloseAdmin() => _adminOpen = false;
+
+    private async Task HandleClearOrders()
+    {
+        if (_clearingOrders)
+            return;
+
+        var confirmed = await JsRuntime.InvokeAsync<bool>(
+            "confirm", "This will permanently delete all orders and order history. Continue?");
+        if (!confirmed)
+            return;
+
+        _clearingOrders = true;
+        _adminError = null;
+
+        try
+        {
+            await OrderService.ClearOrders();
+
+            // Navigating to "/" with forceLoad both moves the user Home if they were
+            // elsewhere and forces a full reload if they were already there.
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        catch
+        {
+            _adminError = "Failed to clear orders. Please try again.";
+            _clearingOrders = false;
+        }
+    }
 
     private string CategoryLinkClass(string baseClass, int? categoryId) =>
         SelectedCategoryId == categoryId ? $"{baseClass} active" : baseClass;

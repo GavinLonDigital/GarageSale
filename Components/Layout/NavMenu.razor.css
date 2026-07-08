@@ -275,6 +275,32 @@
     background-color: rgba(212, 224, 74, 0.06);
 }
 
+/* ── Admin dropdown action button (shares .cat-item / .mobile-sub-link look) ── */
+.cat-item.admin-action,
+.mobile-sub-link.admin-action {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-left: 2px solid transparent;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.cat-item.admin-action:disabled,
+.mobile-sub-link.admin-action:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-error-text {
+    margin: 0.3rem 1.1rem 0.4rem;
+    padding: 0;
+    color: #ff8a8a;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
 /* ── Mobile menu — hidden on desktop ────────────────────── */
 .mobile-menu {
     display: none;

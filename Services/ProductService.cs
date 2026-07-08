@@ -85,6 +85,7 @@ public class ProductService(IDbContextFactory<ApplicationDbContext> dbFactory) :
                     SellerEmail                      = user.Email ?? string.Empty,
                     SellerId                         = x.product.SellerId,
                     AdminReview                      = x.product.AdminReview,
+                    SalesStatus                      = x.product.SalesStatus,
                 })
             .OrderBy(dto => dto.ConditionRatingNumber);
     }
@@ -129,6 +130,7 @@ public class ProductService(IDbContextFactory<ApplicationDbContext> dbFactory) :
                     SellerEmail                      = user.Email ?? string.Empty,
                     SellerId                         = x.product.SellerId,
                     AdminReview                      = x.product.AdminReview,
+                    SalesStatus                      = x.product.SalesStatus,
                 })
             .OrderBy(dto => dto.ConditionRatingNumber)
             .ToListAsync();
@@ -196,6 +198,7 @@ public class ProductService(IDbContextFactory<ApplicationDbContext> dbFactory) :
                     SellerEmail                      = user.Email ?? string.Empty,
                     SellerId                         = x.product.SellerId,
                     AdminReview                      = x.product.AdminReview,
+                    SalesStatus                      = x.product.SalesStatus,
                 })
             .OrderBy(dto => dto.ConditionRatingNumber)
             .ToListAsync();
@@ -235,6 +238,7 @@ public class ProductService(IDbContextFactory<ApplicationDbContext> dbFactory) :
                     SellerEmail                      = user.Email ?? string.Empty,
                     SellerId                         = x.product.SellerId,
                     AdminReview                      = x.product.AdminReview,
+                    SalesStatus                      = x.product.SalesStatus,
                 })
             .FirstOrDefaultAsync();
     }

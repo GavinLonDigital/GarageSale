@@ -60,6 +60,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(u => u.ZipOrPostCode).HasMaxLength(200);
         });
 
+        builder.Entity<Products>(entity =>
+        {
+            entity.Property(p => p.SalesStatus)
+                .HasConversion(v => ((char)v).ToString(), v => (ProductSalesStatus)v[0])
+                .HasColumnType("char(1)")
+                .HasDefaultValueSql("'A'")
+                .HasSentinel((ProductSalesStatus)0);
+        });
+
         builder.Entity<ShoppingCartItems>(entity =>
         {
             entity.Property(sci => sci.UserId).HasMaxLength(450);

@@ -1,3 +1,5 @@
+using GarageSale.Data;
+
 namespace GarageSale.DTOs;
 
 public class ProductDto
@@ -25,4 +27,6 @@ public class ProductDto
     public string SellerEmail { get; set; } = string.Empty;
 
     public string SellerId { get; set; } = string.Empty;
+
+    public ProductSalesStatus SalesStatus { get; set; }
 }

@@ -1,0 +1,89 @@
+@page "/admin-order-history"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+@using GarageSale.DTOs
+@using GarageSale.Services
+@inject IOrderService OrderService
+
+<PageTitle>Order History</PageTitle>
+
+<div class="container py-5">
+    <h1 class="order-history-title">Order History</h1>
+    <div class="order-history-rule"></div>
+
+    @if (_loading)
+    {
+        <p class="order-history-status">Loading orders...</p>
+    }
+    else if (_errorMessage is not null)
+    {
+        <p class="order-history-error">@_errorMessage</p>
+    }
+    else if (_orders.Count == 0)
+    {
+        <p class="order-history-status">No orders found.</p>
+    }
+    else
+    {
+        @foreach (var order in _orders)
+        {
+            <div class="order-card">
+                <div class="order-card-header">
+                    <h2 class="order-number">Order #@order.Id</h2>
+                    <span class="order-status order-status--@order.Status.ToString().ToLowerInvariant()">@order.Status</span>
+                </div>
+
+                <div class="order-meta">
+                    <div class="order-meta-row">
+                        <span class="order-meta-label">Date</span>
+                        <span class="order-meta-value">@order.DateAdded.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</span>
+                    </div>
+                    <div class="order-meta-row">
+                        <span class="order-meta-label">Customer</span>
+                        <span class="order-meta-value">@order.CustomerName (@order.CustomerEmail)</span>
+                    </div>
+                    <div class="order-meta-row">
+                        <span class="order-meta-label">Total</span>
+                        <span class="order-meta-value">@FormatPrice(order.Total)</span>
+                    </div>
+                </div>
+
+                <ul class="order-item-list">
+                    @foreach (var item in order.Items)
+                    {
+                        <li class="order-item-row">
+                            <span class="order-item-name">@item.ProductName</span>
+                            <span class="order-item-seller">Sold by @item.SellerBusinessName</span>
+                            <span class="order-item-price">@FormatPrice(item.Price)</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<OrderDto> _orders = [];
+    private bool _loading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _orders = await OrderService.GetOrderHistory();
+        }
+        catch
+        {
+            _errorMessage = "Something went wrong while loading order history. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatPrice(int cents) =>
+        (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+}

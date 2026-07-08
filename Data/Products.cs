@@ -37,4 +37,8 @@ public class Products
 
     [ForeignKey(nameof(SellerId))]
     public ApplicationUser Seller { get; set; } = null!;
+
+    // Mapped to char(1) via value converter in Fluent API.
+    // 'A' = Available, 'S' = Sold / Not Available.
+    public ProductSalesStatus SalesStatus { get; set; } = ProductSalesStatus.Available;
 }
