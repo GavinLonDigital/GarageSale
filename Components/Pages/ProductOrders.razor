@@ -5,7 +5,8 @@
 @using GarageSale.Services
 @using System.Security.Claims
 @inject IShoppingCartService ShoppingCartService
-@inject IOrderService OrderService
+@inject StripePaymentService Payments
+@inject NavigationManager Navigation
 
 <PageTitle>Order Summary</PageTitle>
 
@@ -15,18 +16,6 @@
         @if (_isLoading)
         {
             <LoadingSpinner />
-        }
-        else if (_orderPlaced)
-        {
-            <div class="checkout-success" role="alert">
-                <div class="checkout-success-icon" aria-hidden="true">&#10003;</div>
-                <h2 class="checkout-success-title">Order placed!</h2>
-                <p class="checkout-success-body">
-                    Thank you for your purchase. Your order reference is
-                    <strong class="checkout-success-ref">#@_orderId</strong>.
-                </p>
-                <a href="/" class="checkout-success-link">Continue Shopping</a>
-            </div>
         }
         else if (_cartItems.Count == 0)
         {
@@ -86,7 +75,7 @@
                     {
                         <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                     }
-                    Place Your Order
+                    Pay with Stripe (sandbox)
                 </button>
             </div>
         }
@@ -101,8 +90,6 @@
     private List<ShoppingCartItemsDto> _cartItems = [];
     private bool _isLoading = true;
     private bool _isBuying;
-    private bool _orderPlaced;
-    private int  _orderId;
     private string? _userId;
     private string? _buyError;
 
@@ -127,13 +114,16 @@
 
         try
         {
-            _orderId     = await OrderService.CreateOrder(_userId);
-            _orderPlaced = true;
-            _cartItems   = [];
+            var result = await Payments.CheckoutAsync((await AuthState).User);
+            Navigation.NavigateTo(result.Url, forceLoad: true);
         }
-        catch (Exception ex)
+        catch (CheckoutException ex)
         {
-            _buyError = $"Checkout failed: {ex.Message}";
+            _buyError = ex.Message;
+        }
+        catch
+        {
+            _buyError = "Checkout could not be created. Please retry; any saved payment attempt will be resumed safely.";
         }
         finally
         {

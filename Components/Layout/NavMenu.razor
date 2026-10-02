@@ -217,6 +217,11 @@
             // elsewhere and forces a full reload if they were already there.
             NavigationManager.NavigateTo("/", forceLoad: true);
         }
+        catch (GarageSale.Services.CheckoutException ex)
+        {
+            _adminError = ex.Message;
+            _clearingOrders = false;
+        }
         catch
         {
             _adminError = "Failed to clear orders. Please try again.";

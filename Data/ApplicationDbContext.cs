@@ -19,6 +19,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
+    public DbSet<PaymentAttempt> PaymentAttempts { get; set; }
+    public DbSet<InventoryReservation> InventoryReservations { get; set; }
+    public DbSet<StripeWebhookReceipt> StripeWebhookReceipts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -116,8 +120,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(o => o.UpdatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            // Preserve the existing nullable rowversion column; no schema change is needed.
             entity.Property(o => o.RowVersion)
-                .IsRowVersion();
+                .IsRowVersion().IsRequired(false);
 
             // Order.UserId cascades so that deleting a user removes their orders.
             // OrderItem.SellerId uses Restrict to avoid SQL Server's multiple cascade
@@ -154,6 +159,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(oi => oi.ProductId);
             entity.HasIndex(oi => oi.SellerId);
         });
+
+        builder.Entity<PaymentAttempt>(entity =>
+        {
+            entity.Property(p => p.PendingUserId).HasMaxLength(450);
+            entity.Property(p => p.SessionId).HasMaxLength(255);
+            entity.Property(p => p.PaymentIntentId).HasMaxLength(255);
+            entity.Property(p => p.Currency).HasMaxLength(3);
+            entity.HasIndex(p => p.PendingUserId).IsUnique().HasFilter("[PendingUserId] IS NOT NULL");
+            entity.HasIndex(p => p.SessionId).IsUnique().HasFilter("[SessionId] IS NOT NULL");
+            entity.HasIndex(p => p.OrderId).IsUnique();
+            entity.HasOne(p => p.Order).WithMany().HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<InventoryReservation>(entity =>
+        {
+            entity.HasKey(r => r.ProductId);
+            entity.HasOne(r => r.Product).WithMany().HasForeignKey(r => r.ProductId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(r => r.Order).WithMany().HasForeignKey(r => r.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<StripeWebhookReceipt>().Property(r => r.Id).HasMaxLength(255);
 
         builder.Entity<Categories>().HasData(
             new Categories { Id = 1, CategoryName = "Beauty",      CategoryDescription = "Beauty products"    },

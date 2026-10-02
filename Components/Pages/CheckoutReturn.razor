@@ -1,0 +1,131 @@
+@page "/checkout/success/{OrderId:int}"
+@page "/checkout/cancel/{OrderId:int}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@implements IDisposable
+@using GarageSale.Data
+@using GarageSale.Services
+@inject StripePaymentService Payments
+@inject IShoppingCartService ShoppingCart
+@inject CartStateService CartState
+@inject NavigationManager Navigation
+
+<PageTitle>Payment Status</PageTitle>
+
+<div class="container py-5">
+    <h1>Payment status</h1>
+    @if (_loading)
+    {
+        <LoadingSpinner />
+    }
+    else if (_error is not null)
+    {
+        <p role="alert">@_error</p>
+        <button class="btn btn-outline-primary" @onclick="Retry">Retry</button>
+    }
+    else if (_status is not null)
+    {
+        <h2>Order #@_status.OrderId: @_status.Status</h2>
+        <p>Total: @((_status.Amount / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US")))</p>
+        @if (_status.Status is OrderStatus.Paid or OrderStatus.Delivered)
+        {
+            <p role="status">Thank you! Stripe has confirmed your sandbox payment.</p>
+        }
+        else if (_status.Status == OrderStatus.Pending)
+        {
+            <p role="status">Payment is awaiting confirmation. This page updates automatically. Delayed methods can take longer.</p>
+            @if (Navigation.Uri.Contains("/checkout/cancel/", StringComparison.Ordinal))
+            {
+                <p>You returned from Checkout. Your payment may still complete, and your items remain reserved. Return to checkout to resume the same session.</p>
+            }
+        }
+        else
+        {
+            <p>Your payment did not complete. Your cart is preserved; return to checkout to try again if the items are still available.</p>
+        }
+        <a class="btn btn-primary me-2" href="/checkout">Return to checkout</a>
+        <a class="btn btn-outline-secondary" href="/">Continue shopping</a>
+    }
+</div>
+
+@code {
+    [Parameter] public int OrderId { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+    private PaymentStatus? _status;
+    private bool _loading = true;
+    private string? _error;
+    private CancellationTokenSource? _pollingCancellation;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        StopPolling();
+        await Refresh();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Start only after interactive rendering, never during prerendering.
+        if (_pollingCancellation is null && _status?.Status == OrderStatus.Pending)
+        {
+            _pollingCancellation = new CancellationTokenSource();
+            _ = PollAsync(_pollingCancellation.Token);
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task PollAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await Refresh(showLoading: false, ct: ct);
+                    if (!ct.IsCancellationRequested) StateHasChanged();
+                });
+                if (_status?.Status != OrderStatus.Pending) break;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+    }
+
+    private async Task Retry()
+    {
+        StopPolling();
+        await Refresh();
+    }
+
+    private async Task Refresh(bool showLoading = true, CancellationToken ct = default)
+    {
+        if (showLoading) _loading = true;
+        _error = null;
+        try
+        {
+            var user = (await AuthState).User;
+            // This page only reads database state. URL visits never confirm/cancel payment.
+            var status = await Payments.GetStatusAsync(user, OrderId, ct);
+            ct.ThrowIfCancellationRequested();
+            _status = status;
+            if (_status is null) _error = "Order not found or you do not have access to it.";
+            if (_status?.Status is OrderStatus.Paid or OrderStatus.Delivered)
+            {
+                var id = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value;
+                CartState.SetCount((await ShoppingCart.GetShoppingCartItems(id)).Count);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch { _error = "Could not load your payment status. Please try again."; }
+        finally { if (!ct.IsCancellationRequested) _loading = false; }
+    }
+
+    private void StopPolling()
+    {
+        _pollingCancellation?.Cancel();
+        _pollingCancellation?.Dispose();
+        _pollingCancellation = null;
+    }
+
+    public void Dispose() => StopPolling();
+}

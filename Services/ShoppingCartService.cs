@@ -30,7 +30,7 @@ public class ShoppingCartService(
                     ImagePath          = x.product.ImagePath,
                     SellerId           = x.sci.SellerId,
                     SellerBusinessName = sellerDetail.SellerBusinessName ?? string.Empty,
-                    Price              = x.sci.Price,
+                    Price              = x.product.Price,
                 })
             .ToListAsync();
     }

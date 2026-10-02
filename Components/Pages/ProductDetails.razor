@@ -31,10 +31,10 @@ else if (_product is not null)
                 <div class="product-detail-img-wrap">
                     <img src="@_product.ImagePath"
                          alt="@_product.ProductName"
-                         class="product-detail-img img-fluid rounded shadow @(IsSold ? "product-detail-img--sold" : "")" />
-                    @if (IsSold)
+                         class="product-detail-img img-fluid rounded shadow @(IsUnavailable ? "product-detail-img--sold" : "")" />
+                    @if (IsUnavailable)
                     {
-                        <span class="sold-badge sold-badge--lg">Sold</span>
+                        <span class="sold-badge sold-badge--lg">@(_product.SalesStatus == ProductSalesStatus.Reserved ? "Reserved" : "Sold")</span>
                     }
                 </div>
             </div>
@@ -65,7 +65,7 @@ else if (_product is not null)
                     </div>
                 </div>
 
-                @if (!IsSold)
+                @if (!IsUnavailable)
                 {
                     <button type="button" class="add-to-cart-btn" @onclick="AddToCart" disabled="@_isAdding">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -76,7 +76,7 @@ else if (_product is not null)
                 }
                 else
                 {
-                    <p class="sold-notice">This item has already been sold and is no longer available.</p>
+                    <p class="sold-notice">@(_product.SalesStatus == ProductSalesStatus.Reserved ? "This item is reserved by a pending checkout." : "This item has already been sold and is no longer available.")</p>
                 }
 
                 <AuthorizeView Roles="Admin">
@@ -115,7 +115,7 @@ else if (_product is not null)
     private string? _cartMessage;
     private bool _cartMessageIsError;
 
-    private bool IsSold => _product?.SalesStatus == ProductSalesStatus.Sold;
+    private bool IsUnavailable => _product?.SalesStatus != ProductSalesStatus.Available;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,7 +132,7 @@ else if (_product is not null)
 
     private async Task AddToCart()
     {
-        if (_product is null || _isAdding || IsSold)
+        if (_product is null || _isAdding || IsUnavailable)
             return;
 
         _isAdding = true;

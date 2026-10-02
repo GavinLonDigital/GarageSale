@@ -1,6 +1,7 @@
 using GarageSale.Components;
 using GarageSale.Configuration;
 using GarageSale.Data;
+using GarageSale.Endpoints;
 using GarageSale.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<OpenAIOptions>(builder.Configuration);
+builder.Services.Configure<StripeOptions>(options =>
+{
+    options.SecretKey = builder.Configuration["STRIPE_SECRET_KEY"] ?? "";
+    options.WebhookSecret = builder.Configuration["STRIPE_WEBHOOK_SECRET"] ?? "";
+    options.AppBaseUrl = builder.Configuration["APP_BASE_URL"] ?? "";
+});
+builder.Services.AddHttpClient<IStripeCheckoutGateway, StripeCheckoutGateway>(client => client.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddScoped<StripePaymentService>();
+builder.Services.AddHostedService<StripeReconciliationWorker>();
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -67,6 +77,8 @@ app.MapStaticAssets();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+
+app.MapStripeWebhook();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

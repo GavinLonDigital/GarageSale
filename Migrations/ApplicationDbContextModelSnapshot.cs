@@ -250,6 +250,21 @@ namespace GarageSale.Migrations
                         });
                 });
 
+            modelBuilder.Entity("GarageSale.Data.InventoryReservation", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("InventoryReservations");
+                });
+
             modelBuilder.Entity("GarageSale.Data.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -324,6 +339,61 @@ namespace GarageSale.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("GarageSale.Data.PaymentAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PendingUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RequestJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SessionExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("PendingUserId")
+                        .IsUnique()
+                        .HasFilter("[PendingUserId] IS NOT NULL");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique()
+                        .HasFilter("[SessionId] IS NOT NULL");
+
+                    b.ToTable("PaymentAttempts");
                 });
 
             modelBuilder.Entity("GarageSale.Data.Products", b =>
@@ -444,6 +514,20 @@ namespace GarageSale.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ShoppingCartItems");
+                });
+
+            modelBuilder.Entity("GarageSale.Data.StripeWebhookReceipt", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StripeWebhookReceipts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -598,6 +682,25 @@ namespace GarageSale.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GarageSale.Data.InventoryReservation", b =>
+                {
+                    b.HasOne("GarageSale.Data.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GarageSale.Data.Products", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("GarageSale.Data.Order", b =>
                 {
                     b.HasOne("GarageSale.Data.ApplicationUser", "User")
@@ -634,6 +737,17 @@ namespace GarageSale.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Seller");
+                });
+
+            modelBuilder.Entity("GarageSale.Data.PaymentAttempt", b =>
+                {
+                    b.HasOne("GarageSale.Data.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("GarageSale.Data.Products", b =>

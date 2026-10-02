@@ -4,3 +4,5 @@ app.db
 .env
 .vs/
 *.user
+
+.env.*

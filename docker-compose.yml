@@ -23,6 +23,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${DB_NAME};User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:-}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
+      APP_BASE_URL: "${APP_BASE_URL:-}"
       OpenAIKey: "${OPENAI_KEY}"
       AdminReviewOpenAIPrompt: "${ADMIN_REVIEW_OPENAI_PROMPT}"
     ports:
