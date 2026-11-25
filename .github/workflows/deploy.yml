@@ -1,11 +1,83 @@
-name: GarageSale Azure Deployment
+
+name: GarageSale Azure CI/CD
 
 on:
   workflow_dispatch:
 
+  # Initial test: run only when this workflow file changes
+  push:
+    branches:
+      - feature/azure-cloud-native
+    paths:
+      - .github/workflows/deploy.yml
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: garagesale-azure-dev
+  cancel-in-progress: false
+
+env:
+  RESOURCE_GROUP: rg-garagesale-dev
+  CONTAINER_APP_NAME: ca-garagesale-dev
+  ACR_NAME: acrgaragesale1975
+  ACR_LOGIN_SERVER: acrgaragesale1975-drguddevgce5byam.azurecr.io
+  IMAGE_NAME: garagesale
+
 jobs:
-  placeholder:
+  build-and-deploy:
+    name: Build and deploy GarageSale
     runs-on: ubuntu-latest
+
     steps:
-      - name: Pipeline not configured yet
-        run: echo "GarageSale Azure CI/CD pipeline will be configured later."
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore GarageSale.csproj
+
+      - name: Build GarageSale
+        run: dotnet build GarageSale.csproj --configuration Release --no-restore
+
+      - name: Authenticate to Azure using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign in to Azure Container Registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --file Dockerfile \
+            --tag "$ACR_LOGIN_SERVER/$IMAGE_NAME:$GITHUB_SHA" \
+            .
+
+      - name: Push Docker image to ACR
+        run: |
+          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:$GITHUB_SHA"
+
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$ACR_LOGIN_SERVER/$IMAGE_NAME:$GITHUB_SHA"
+
+      - name: Display deployed image
+        run: |
+          az containerapp show \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "properties.template.containers[0].image" \
+            --output tsv
