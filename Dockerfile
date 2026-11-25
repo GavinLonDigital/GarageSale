@@ -1,25 +1,32 @@
+
+# Stage 1: Build and publish GarageSale
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+# Restore NuGet dependencies
 COPY ["GarageSale.csproj", "."]
 RUN dotnet restore "GarageSale.csproj"
 
+# Copy source and publish the application
 COPY . .
-RUN dotnet build "GarageSale.csproj" -c Release -o /app/build
+RUN dotnet publish "GarageSale.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
 
-FROM build AS publish
-RUN dotnet publish "GarageSale.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-EXPOSE 8080
 
+# Azure Container Apps ingress target port
+EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
 
-COPY --from=publish /app/publish .
+# Copy the published Blazor application
+COPY --from=build --chown=app:app /app/publish .
 
-# Ensures the non-root user can read/write to the app folder if needed
-RUN chown -R app:app /app
-
+# Run as a non-root user
 USER app
+
 ENTRYPOINT ["dotnet", "GarageSale.dll"]

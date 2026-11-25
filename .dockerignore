@@ -1,6 +1,24 @@
-bin/
-obj/
-app.db
-.env
+
+# Build outputs
+**/bin/
+**/obj/
+
+# Visual Studio files
 .vs/
 *.user
+
+# Git repository
+.git/
+.gitignore
+
+# Local databases
+app.db
+*.db
+
+# Environment files and secrets
+.env
+.env.*
+**/secrets.json
+
+# Local development configuration
+**/appsettings.Development.json
