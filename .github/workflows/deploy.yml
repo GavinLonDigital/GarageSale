@@ -4,12 +4,9 @@ name: GarageSale Azure CI/CD
 on:
   workflow_dispatch:
 
-  # Initial test: run only when this workflow file changes
   push:
     branches:
       - feature/azure-cloud-native
-    paths:
-      - .github/workflows/deploy.yml
 
 permissions:
   id-token: write
